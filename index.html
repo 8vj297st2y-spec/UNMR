@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>うんもらスタンプカード - Unmora Project</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --brown: #8b5a2b;
+      --light-brown: #cfa57a;
+      --aqua: #6fd6ff;
+      --aqua-light: #c9f3ff;
+      --akane-red: #ff4b5c;
+      --bg: #fffaf3;
+      --card-radius: 18px;
+      --shadow-soft: 0 6px 16px rgba(0,0,0,0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #fdf7e8 0, #fbeee0 40%, #f7e3d0 100%);
+      color: #3b2a1a;
+      display: flex;
+      justify-content: center;
+      padding: 16px 8px 32px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 24px;
+      box-shadow: var(--shadow-soft);
+      padding: 16px 14px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    h1 {
+      font-size: 1.2rem;
+      margin: 0;
+      color: var(--brown);
+      letter-spacing: 0.04em;
+    }
+
+    .subtitle {
+      font-size: 0.75rem;
+      color: #7a5a3a;
+    }
+
+    .akane-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #ffe5e8;
+      border: 1px solid #ffc2ca;
+      font-size: 0.75rem;
+      color: var(--akane-red);
+      white-space: nowrap;
+    }
+
+    .akane-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--akane-red);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .tabs {
+      display: flex;
+      margin: 8px 0 12px;
+      padding: 3px;
+      background: #f4e3d3;
+      border-radius: 999px;
+      position: relative;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px 4px;
+      font-size: 0.8rem;
+      border-radius: 999px;
+      cursor: pointer;
+      color: #7a5a3a;
+      position: relative;
+      z-index: 1;
+      user-select: none;
+    }
+
+    .tab.active {
+      color: var(--brown);
+      font-weight: 600;
+    }
+
+    .tab-indicator {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      width: 50%;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+      transition: transform 0.25s ease;
+    }
+
+    .tab-indicator.history {
+      transform: translateX(100%);
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+    }
+
+    .page {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: linear-gradient(135deg, var(--aqua-light), #fff);
+      border-radius: var(--card-radius);
+      padding: 12px 12px 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border: 1px solid #e0f4ff;
+      margin-bottom: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--brown);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-title span {
+      font-size: 1.1rem;
+    }
+
+    .badge-pill {
+      font-size: 0.7rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px dashed var(--brown);
+      color: #7a5a3a;
+    }
+
+    .stamp-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .stamp-slot {
+      width: 100%;
+      padding-top: 100%;
+      position: relative;
+      border-radius: 50%;
+      border: 2px dashed rgba(139,90,43,0.35);
+      background: rgba(255,255,255,0.8);
+      overflow: hidden;
+    }
+
+    .stamp-slot.filled {
+      border-style: solid;
+      border-color: var(--brown);
+      background: radial-gradient(circle at 30% 20%, #fff7d1 0, #ffd27f 40%, #ffb347 100%);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.18) inset;
+      animation: popStamp 0.25s ease;
+    }
+
+    .stamp-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .stamp-number {
+      font-size: 0.7rem;
+      color: rgba(139,90,43,0.6);
+      position: absolute;
+      bottom: 3px;
+      right: 4px;
+    }
+
+    @keyframes popStamp {
+      0% { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      font-size: 0.75rem;
+      color: #6a4a2a;
+    }
+
+    .progress-bar {
+      flex: 1;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(139,90,43,0.15);
+      overflow: hidden;
+      margin-right: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--brown), var(--aqua));
+      transition: width 0.25s ease;
+    }
+
+    .badge-count {
+      font-size: 0.75rem;
+      background: #fff;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(139,90,43,0.25);
+    }
+
+    .lifehack-card {
+      background: #fff7e6;
+      border-radius: var(--card-radius);
+      padding: 10px 10px 10px;
+      border: 1px solid #f1d7a8;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+      margin-bottom: 10px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .lifehack-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--akane-red);
+      margin-bottom: 2px;
+    }
+
+    .lifehack-text {
+      font-size: 0.8rem;
+      line-height: 1.4;
+      color: #5a3a1a;
+    }
+
+    .lifehack-akane {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 0.7rem;
+      color: var(--akane-red);
+    }
+
+    .lifehack-akane .akane-icon {
+      width: 26px;
+      height: 26px;
+      font-size: 0.85rem;
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 8px;
+      margin: 8px 0 6px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+      font-family: inherit;
+    }
+
+    button:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: none;
+    }
+
+    .btn-main {
+      flex: 1.4;
+      background: linear-gradient(135deg, var(--brown), #c97a3a);
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(139,90,43,0.35);
+    }
+
+    .btn-main span {
+      font-size: 1.1rem;
+    }
+
+    .btn-secondary {
+      flex: 1;
+      background: #e4f7ff;
+      color: #3b5a6a;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+    }
+
+    .btn-secondary.danger {
+      background: #ffe5e8;
+      color: var(--akane-red);
+    }
+
+    .meta-info {
+      font-size: 0.75rem;
+      color: #6a4a2a;
+      margin-top: 6px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.8);
+      border: 1px dashed rgba(139,90,43,0.25);
+    }
+
+    .meta-info-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
+    .meta-label {
+      font-weight: 600;
+    }
+
+    .meta-value {
+      text-align: right;
+      flex: 1;
+    }
+
+    .history-summary {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .summary-card {
+      flex: 1;
+      background: #fffdf7;
+      border-radius: 14px;
+      padding: 8px 8px 9px;
+      border: 1px solid #f0e0c0;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+      font-size: 0.8rem;
+    }
+
+    .summary-label {
+      font-size: 0.7rem;
+      color: #7a5a3a;
+      margin-bottom: 2px;
+    }
+
+    .summary-value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--brown);
+    }
+
+    .history-list {
+      max-height: 260px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .history-item {
+      padding: 6px 8px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid #f0e0c0;
+      font-size: 0.78rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .history-item-main {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .history-tag {
+      font-size: 0.7rem;
+      color: #a06a2a;
+    }
+
+    .history-time {
+      font-weight: 600;
+      color: #5a3a1a;
+    }
+
+    .history-index {
+      font-size: 0.7rem;
+      color: #7a5a3a;
+    }
+
+    .floating-poop {
+      position: absolute;
+      font-size: 1.4rem;
+      opacity: 0.25;
+      animation: floatPoop 12s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .floating-poop:nth-child(1) { top: 8%; left: 6%; animation-duration: 13s; }
+    .floating-poop:nth-child(2) { top: 18%; right: 4%; animation-duration: 11s; }
+    .floating-poop:nth-child(3) { bottom: 18%; left: 10%; animation-duration: 15s; }
+    .floating-poop:nth-child(4) { bottom: 8%; right: 12%; animation-duration: 12s; }
+    .floating-poop:nth-child(5) { top: 45%; left: -4%; animation-duration: 16s; }
+
+    @keyframes floatPoop {
+      0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.2; }
+      25% { transform: translateY(-8px) translateX(4px) rotate(-6deg); opacity: 0.35; }
+      50% { transform: translateY(4px) translateX(-4px) rotate(4deg); opacity: 0.25; }
+      75% { transform: translateY(-6px) translateX(2px) rotate(-3deg); opacity: 0.3; }
+      100% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.2; }
+    }
+
+    .footer {
+      margin-top: 10px;
+      font-size: 0.7rem;
+      text-align: center;
+      color: #8a6a4a;
+      padding-top: 6px;
+      border-top: 1px dashed rgba(139,90,43,0.3);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 16px;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 360px;
+      background: #fffdf8;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      padding: 14px 14px 12px;
+      position: relative;
+      border: 2px solid #ffd7dd;
+      overflow: hidden;
+    }
+
+    .modal.akane-celebrate {
+      border-color: #ffe07a;
+      background: radial-gradient(circle at top, #fff7c2 0, #fffdf5 45%, #ffe9c2 100%);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .modal-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--brown);
+    }
+
+    .modal-body {
+      font-size: 0.85rem;
+      color: #5a3a1a;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .modal-tagline {
+      font-size: 0.7rem;
+      color: #a06a2a;
+      margin-top: 2px;
+    }
+
+    .modal-badge {
+      font-size: 1.4rem;
+      margin-left: auto;
+    }
+
+    .modal-conf-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--akane-red);
+      margin-bottom: 4px;
+    }
+
+    .modal-conf-body {
+      font-size: 0.8rem;
+      color: #5a3a1a;
+      margin-bottom: 8px;
+    }
+
+    .modal-conf-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 0.8rem;
+      color: #7a5a3a;
+      border: 1px solid rgba(139,90,43,0.3);
+      box-shadow: none;
+    }
+
+    .btn-ghost-danger {
+      border-color: var(--akane-red);
+      color: var(--akane-red);
+    }
+
+    @media (max-width: 360px) {
+      .stamp-grid {
+        gap: 4px;
+      }
+      .actions-row {
+        flex-direction: column;
+      }
+      .btn-main, .btn-secondary {
+        width: 100%;
+      }
+      .history-summary {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- 漂ううんちたち -->
+    <div class="floating-poop">💩</div>
+    <div class="floating-poop">💩</div>
+    <div class="floating-poop">💩</div>
+    <div class="floating-poop">💩</div>
+    <div class="floating-poop">💩</div>
+
+    <header>
+      <div class="title-block">
+        <h1>スタンプカード</h1>
+        <div class="subtitle">日々のうんもらを誇ろう</div>
+      </div>
+      <div class="akane-chip">
+        <div class="akane-icon">茜</div>
+        <span>色変茜が全力応援中！</span>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <div class="tab-indicator" id="tabIndicator"></div>
+      <div class="tab active" data-page="cardPage">スタンプカード</div>
+      <div class="tab" data-page="historyPage">うんもら履歴</div>
+    </div>
+
+    <main>
+      <!-- スタンプカードページ -->
+      <section class="page active" id="cardPage">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span>💩</span> うんもらスタンプ
+            </div>
+            <div class="badge-pill">10回でスペシャルうんもらバッジ</div>
+          </div>
+          <div class="stamp-grid" id="stampGrid">
+            <!-- JSで10個生成 -->
+          </div>
+          <div class="progress-info">
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="badge-count">
+              <span id="currentCount">0</span> / 10
+            </div>
+          </div>
+        </div>
+
+        <div class="lifehack-card">
+          <div class="lifehack-akane">
+            <div class="akane-icon">茜</div>
+            <div>ライフハック</div>
+          </div>
+          <div>
+            <div class="lifehack-label">茜のライフハック</div>
+            <div class="lifehack-text" id="lifehackText">
+              トイレットペーパーの最後の1マスは、未来の自分へのサプライズです。大事に残しておきましょう。
+            </div>
+          </div>
+        </div>
+
+        <div class="actions-row">
+          <button class="btn-main" id="stampButton">
+            <span>💩</span> うんもらした！
+          </button>
+          <button class="btn-secondary danger" id="resetButton">
+            全リセット
+          </button>
+        </div>
+
+        <div class="meta-info">
+          <div class="meta-info-row">
+            <div class="meta-label">最後にうんもらした日時</div>
+            <div class="meta-value" id="lastTimeText">まだ記録がありません</div>
+          </div>
+          <div class="meta-info-row">
+            <div class="meta-label">前回からの経過時間</div>
+            <div class="meta-value" id="elapsedText">--</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 履歴ページ -->
+      <section class="page" id="historyPage">
+        <div class="history-summary">
+          <div class="summary-card">
+            <div class="summary-label">累計うんもら回数</div>
+            <div class="summary-value" id="totalCount">0</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">累計スペシャルうんもらバッジ</div>
+            <div class="summary-value" id="badgeCount">0</div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom: 4px;">
+          <div class="card-header">
+            <div class="card-title">
+              <span>📜</span> うんもら履歴
+            </div>
+            <div class="badge-pill" id="historyCountLabel">0件</div>
+          </div>
+          <div class="history-list" id="historyList">
+            <div style="font-size:0.8rem;color:#7a5a3a;padding:4px 2px 2px;">
+              まだうんもらの記録がありません。<br>スタンプカードから「うんもらした！」を押してみましょう。
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="footer">
+      © 2026 Unmora Project
+    </div>
+  </div>
+
+  <!-- 茜メッセージモーダル -->
+  <div class="modal-backdrop" id="akaneModalBackdrop">
+    <div class="modal" id="akaneModal">
+      <div class="modal-header">
+        <div class="akane-icon">茜</div>
+        <div>
+          <div class="modal-title" id="akaneModalTitle">ナイスうんもら！</div>
+          <div class="modal-tagline">色変茜からのありがたいお言葉</div>
+        </div>
+      </div>
+      <div class="modal-body" id="akaneModalBody">
+        うんもらは心のデフラグ。出した分だけ、頭もスッキリするんだよ。
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="akaneCloseButton">ありがたく閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- スペシャルバッジお祝いモーダル -->
+  <div class="modal-backdrop" id="celebrateModalBackdrop">
+    <div class="modal akane-celebrate" id="celebrateModal">
+      <div class="modal-header">
+        <div class="akane-icon">茜</div>
+        <div>
+          <div class="modal-title">スペシャルうんもらバッジ獲得！</div>
+          <div class="modal-tagline">10回のうんもら、おつかれさま！</div>
+        </div>
+        <div class="modal-badge">🏅</div>
+      </div>
+      <div class="modal-body" id="celebrateBody">
+        すごいよ！10回のうんもら達成！<br>
+        スペシャルうんもらバッジを贈呈！<br> <br>
+        スタンプカードがいっぱいだから新しいスタンプカード渡すね！
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="celebrateCloseButton">ありがたく閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- リセット確認モーダル -->
+  <div class="modal-backdrop" id="resetModalBackdrop">
+    <div class="modal">
+      <div class="modal-conf-title">本当に全部リセットしますか？</div>
+      <div class="modal-conf-body">
+        うんもらのスタンプ、履歴、バッジの数など、<br>
+        これまでの全ての記録がゼロになります。<br>
+        それでもよければ続行してください。<br> <br>
+※リセットしても、うんもらの誇りは消えません。
+
+      </div>
+      <div class="modal-conf-footer">
+        <button class="btn-ghost" id="resetCancelButton">やっぱやめる</button>
+        <button class="btn-ghost btn-ghost-danger" id="resetConfirmButton">全部リセットする</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- 定数・データ ---
+    const MAX_STAMPS = 10;
+    const STORAGE_KEY = 'unmoraData_v1';
+
+    const akaneMessages = [
+      'うんもらは、今日の自分をちゃんと終わらせた証拠。よく出しました、えらい！',
+      'トイレに座る時間は、世界で一番ささやかな「自分会議」の時間だよ。',
+      '出ない日があっても大丈夫。茜は、あなたの腸のペースも尊重します。',
+      'スマホを見ながらのうんもらもいいけど、たまには天井を眺めてみよう。意外と落ち着くよ。',
+      'うんもらの音が気になったら、「これは健康アラームです」って心の中で言っておこう。',
+      '水を一口飲んだら、「これは未来のうんもらのタネ」と思ってみて。ちょっと楽しくなるよ。',
+      'トイレに行きたくなったら、それは身体からの「今だけは優先して」のメッセージだよ。',
+      'うんもらの色チェックは、今日の自分への健康アンケート。たまには真面目に見てみよう。',
+      '出たうんもらのことを3秒だけ褒めてから流すと、なぜか気分がちょっと上がる説。',
+      '「出ちゃったものは仕方ない」じゃなくて、「出てくれてありがとう」の気持ちで流してみよう。'
+    ];
+
+    const lifehacks = [
+        "トイレに入る前に、深呼吸を3回すると、なぜかちょっとプロっぽい気分になれるよ。",
+        "トイレのドアを静かに閉めると、なぜかうんもらも上品になる…気がするだけだよ。",
+        "うんもら前に『今日もよろしくお願いします』って心の中で言うと、ちょっと仲良くなれるよ。",
+        "トイレの電気をつけるとき、軽くストレッチすると、なんか健康っぽい雰囲気が出るよ。",
+        "トイレの床のタイルを数えていると、気づいたらうんもらが終わってることがあるよ。",
+        "うんもらのあと、鏡を見てニヤッとすると、1日のテンションが0.5上がるらしいよ。（茜調べ）",
+        "トイレにお気に入りの香りを1つ置いておくと、うんもらがちょっとしたイベントになるよ。",
+        "トイレから出るときに『ミッションコンプリート』って心の中で言うと、ちょっと強くなった気がするよ。",
+        "うんもらの前に足首をくるくる回すと、なんか通っぽい感じがするよね。",
+        "トイレの時間を『自分会議タイム』って呼ぶと、急に大事な時間っぽくなるよ。",
+      "うんもらのことを「腸のアウトプット」と呼ぶと、なんだか仕事してる感が出るよ。"
+    ];
+
+    // --- 状態 ---
+    let state = {
+      currentStamps: 0,
+      totalUnmora: 0,
+      totalBadges: 0,
+      history: [], // {timestamp: number}
+      lastTimestamp: null
+    };
+
+    // --- DOM取得 ---
+    const stampGrid = document.getElementById('stampGrid');
+    const progressFill = document.getElementById('progressFill');
+    const currentCountEl = document.getElementById('currentCount');
+    const totalCountEl = document.getElementById('totalCount');
+    const badgeCountEl = document.getElementById('badgeCount');
+    const historyListEl = document.getElementById('historyList');
+    const historyCountLabel = document.getElementById('historyCountLabel');
+    const lastTimeText = document.getElementById('lastTimeText');
+    const elapsedText = document.getElementById('elapsedText');
+    const lifehackText = document.getElementById('lifehackText');
+
+    const stampButton = document.getElementById('stampButton');
+    const resetButton = document.getElementById('resetButton');
+
+    const akaneModalBackdrop = document.getElementById('akaneModalBackdrop');
+    const akaneModalBody = document.getElementById('akaneModalBody');
+    const akaneModalTitle = document.getElementById('akaneModalTitle');
+    const akaneCloseButton = document.getElementById('akaneCloseButton');
+
+    const celebrateModalBackdrop = document.getElementById('celebrateModalBackdrop');
+    const celebrateCloseButton = document.getElementById('celebrateCloseButton');
+
+    const resetModalBackdrop = document.getElementById('resetModalBackdrop');
+    const resetCancelButton = document.getElementById('resetCancelButton');
+    const resetConfirmButton = document.getElementById('resetConfirmButton');
+
+    const tabs = document.querySelectorAll('.tab');
+    const tabIndicator = document.getElementById('tabIndicator');
+    const cardPage = document.getElementById('cardPage');
+    const historyPage = document.getElementById('historyPage');
+
+    // --- ユーティリティ ---
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        state = Object.assign(state, data);
+      } catch (e) {
+        console.warn('Failed to load state', e);
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.warn('Failed to save state', e);
+      }
+    }
+
+    function formatDateTime(ts) {
+      const d = new Date(ts);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const h = String(d.getHours()).padStart(2, '0');
+      const min = String(d.getMinutes()).padStart(2, '0');
+      const s = String(d.getSeconds()).padStart(2, '0');
+      return `${y}/${m}/${day} ${h}:${min}:${s}`;
+    }
+
+    function formatElapsed(ms) {
+      if (ms < 0) ms = 0;
+      const sec = Math.floor(ms / 1000);
+      const days = Math.floor(sec / 86400);
+      const hours = Math.floor((sec % 86400) / 3600);
+      const minutes = Math.floor((sec % 3600) / 60);
+      const seconds = sec % 60;
+
+      if (sec < 60) {
+        return `${seconds}秒前`;
+      } else if (sec < 3600) {
+        return `${minutes}分${seconds}秒前`;
+      } else if (sec < 86400) {
+        return `${hours}時間${minutes}分前`;
+      } else {
+        return `${days}日${hours}時間前`;
+      }
+    }
+
+    function randomFrom(array) {
+      return array[Math.floor(Math.random() * array.length)];
+    }
+
+    // --- UI更新 ---
+    function renderStampGrid() {
+      stampGrid.innerHTML = '';
+      for (let i = 0; i < MAX_STAMPS; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'stamp-slot' + (i < state.currentStamps ? ' filled' : '');
+        const content = document.createElement('div');
+        content.className = 'stamp-content';
+        content.textContent = i < state.currentStamps ? '💩' : '';
+        const num = document.createElement('div');
+        num.className = 'stamp-number';
+        slot.appendChild(content);
+        slot.appendChild(num);
+        stampGrid.appendChild(slot);
+      }
+      currentCountEl.textContent = state.currentStamps;
+      const percent = (state.currentStamps / MAX_STAMPS) * 1000;
+      progressFill.style.width = percent + '%';
+    }
+
+    function renderSummary() {
+      totalCountEl.textContent = state.totalUnmora;
+      badgeCountEl.textContent = state.totalBadges;
+      const count = state.history.length;
+      historyCountLabel.textContent = count + '件';
+    }
+
+    function renderHistory() {
+      historyListEl.innerHTML = '';
+      if (state.history.length === 0) {
+        const empty = document.createElement('div');
+        empty.style.fontSize = '0.8rem';
+        empty.style.color = '#7a5a3a';
+        empty.style.padding = '4px 2px 2px';
+        empty.innerHTML = 'まだうんもらの記録がありません。<br>スタンプカードから「うんもらした！」を押してみましょう。';
+        historyListEl.appendChild(empty);
+        return;
+      }
+      state.history
+        .slice()
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .forEach((item, index) => {
+          const div = document.createElement('div');
+          div.className = 'history-item';
+          const main = document.createElement('div');
+          main.className = 'history-item-main';
+          const tag = document.createElement('div');
+          tag.className = 'history-tag';
+          tag.textContent = 'うんもら記録';
+          const time = document.createElement('div');
+          time.className = 'history-time';
+          time.textContent = formatDateTime(item.timestamp);
+          main.appendChild(tag);
+          main.appendChild(time);
+
+          const idx = document.createElement('div');
+          idx.className = 'history-index';
+          idx.textContent = `#${state.history.length - index}`;
+
+          div.appendChild(main);
+          div.appendChild(idx);
+          historyListEl.appendChild(div);
+        });
+    }
+
+    function renderLastTime() {
+      if (!state.lastTimestamp) {
+        lastTimeText.textContent = 'まだ記録がありません';
+        elapsedText.textContent = '--';
+        return;
+      }
+      lastTimeText.textContent = formatDateTime(state.lastTimestamp);
+      const diff = Date.now() - state.lastTimestamp;
+      elapsedText.textContent = formatElapsed(diff);
+    }
+
+    function updateLifehack() {
+      lifehackText.textContent = randomFrom(lifehacks);
+    }
+
+    // --- モーダル制御 ---
+    function openAkaneModal(message, isNormal = true) {
+      akaneModalBody.innerHTML = message.replace(/\n/g, '<br>');
+      akaneModalTitle.textContent = isNormal ? 'ナイスうんもら！' : 'うんもら達成おめでとう！';
+      akaneModalBackdrop.classList.add('active');
+    }
+
+    function closeAkaneModal() {
+      akaneModalBackdrop.classList.remove('active');
+    }
+
+    function openCelebrateModal() {
+      celebrateModalBackdrop.classList.add('active');
+    }
+
+    function closeCelebrateModal() {
+      celebrateModalBackdrop.classList.remove('active');
+    }
+
+    function openResetModal() {
+      resetModalBackdrop.classList.add('active');
+    }
+
+    function closeResetModal() {
+      resetModalBackdrop.classList.remove('active');
+    }
+
+    // --- イベント ---
+    stampButton.addEventListener('click', () => {
+      const now = Date.now();
+      state.currentStamps += 1;
+      state.totalUnmora += 1;
+      state.history.push({ timestamp: now });
+      state.lastTimestamp = now;
+
+      // ライフハック更新
+      updateLifehack();
+
+      // 通常メッセージ
+      const msg = randomFrom(akaneMessages);
+      openAkaneModal(msg, true);
+
+      // 10個達成チェック
+      if (state.currentStamps >= MAX_STAMPS) {
+        state.totalBadges += 1;
+        state.currentStamps = 0;
+        // お祝いモーダル
+        setTimeout(() => {
+          openCelebrateModal();
+        }, 250);
+      }
+
+      saveState();
+      renderStampGrid();
+      renderSummary();
+      renderHistory();
+      renderLastTime();
+    });
+
+    akaneCloseButton.addEventListener('click', closeAkaneModal);
+    akaneModalBackdrop.addEventListener('click', (e) => {
+      if (e.target === akaneModalBackdrop) closeAkaneModal();
+    });
+
+    celebrateCloseButton.addEventListener('click', closeCelebrateModal);
+    celebrateModalBackdrop.addEventListener('click', (e) => {
+      if (e.target === celebrateModalBackdrop) closeCelebrateModal();
+    });
+
+    resetButton.addEventListener('click', openResetModal);
+    resetCancelButton.addEventListener('click', closeResetModal);
+    resetModalBackdrop.addEventListener('click', (e) => {
+      if (e.target === resetModalBackdrop) closeResetModal();
+    });
+
+    resetConfirmButton.addEventListener('click', () => {
+      state = {
+        currentStamps: 0,
+        totalUnmora: 0,
+        totalBadges: 0,
+        history: [],
+        lastTimestamp: null
+      };
+      saveState();
+      renderStampGrid();
+      renderSummary();
+      renderHistory();
+      renderLastTime();
+      updateLifehack();
+      closeResetModal();
+    });
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const page = tab.dataset.page;
+        if (page === 'cardPage') {
+          cardPage.classList.add('active');
+          historyPage.classList.remove('active');
+          tabIndicator.classList.remove('history');
+        } else {
+          cardPage.classList.remove('active');
+          historyPage.classList.add('active');
+          tabIndicator.classList.add('history');
+        }
+      });
+    });
+
+    // 経過時間の定期更新
+    setInterval(() => {
+      if (state.lastTimestamp) {
+        renderLastTime();
+      }
+    }, 1000);
+
+    // --- 初期化 ---
+    function init() {
+      loadState();
+      renderStampGrid();
+      renderSummary();
+      renderHistory();
+      renderLastTime();
+      updateLifehack();
+    }
+
+    init();
+  </script>
+</body>
+</html>
